@@ -106,7 +106,6 @@
     <div class="err" id="lk-err"></div>
     <div style="height:12px"></div>
     <button class="btn primary block" id="lk-go">دخول</button>
-    <p class="mut center" style="margin-top:14px"><a href="#" id="lk-reset">نسيت الباسورد؟ إعادة ضبط اللوحة على هذا الموبايل</a></p>
   </div>
 </div>
 
@@ -595,14 +594,6 @@ $("lk-go").addEventListener("click", async () => {
   }
 });
 $("lk-pass").addEventListener("keydown", (e) => { if (e.key === "Enter") $("lk-go").click(); });
-$("lk-reset").addEventListener("click", (e) => {
-  e.preventDefault();
-  if (!confirm("إعادة الضبط بتمسح الباسورد والمفتاح المحفوظين على الموبايل ده، وهتعمل الإعداد من جديد. متأكد؟")) return;
-  localStorage.removeItem(LS_PWHASH);
-  localStorage.removeItem(LS_TOKEN);
-  sessionStorage.removeItem(SS_OPEN);
-  location.reload();
-});
 $("ed-lock").addEventListener("click", () => {
   if (state.dirty && !confirm("عندك تعديلات لم تُنشر — تقفل من غير نشر؟")) return;
   sessionStorage.removeItem(SS_OPEN);
