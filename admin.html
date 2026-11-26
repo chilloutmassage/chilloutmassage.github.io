@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>إدارة منيو تشيل أوت</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161c26; --panel2:#1c2431; --line:#2a3444;
+    --txt:#e8ecf3; --mut:#9aa5bb; --gold:#c9a45c; --gold2:#e3c07f;
+    --red:#e06c5b; --green:#5bbf7a; --rad:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:"Segoe UI",Tahoma,Arial,sans-serif;font-size:16px;line-height:1.55}
+  .wrap{max-width:640px;margin:0 auto;padding:18px 14px 120px}
+  h1{font-size:21px;margin:6px 0 2px;color:var(--gold2)}
+  h2{font-size:17px;margin:0;color:var(--gold2)}
+  .mut{color:var(--mut);font-size:13.5px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:16px;margin:14px 0}
+  label{display:block;font-size:13.5px;color:var(--mut);margin:10px 0 4px}
+  input[type=text],input[type=number],input[type=password],textarea{
+    width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    color:var(--txt);padding:11px 12px;font-size:16px;font-family:inherit;outline:none}
+  input:focus,textarea:focus{border-color:var(--gold)}
+  textarea{min-height:56px;resize:vertical}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);
+    background:var(--panel2);color:var(--txt);border-radius:11px;padding:11px 16px;font-size:15.5px;
+    font-family:inherit;cursor:pointer;min-height:46px}
+  .btn:active{transform:scale(.98)}
+  .btn.primary{background:var(--gold);border-color:var(--gold);color:#191104;font-weight:700}
+  .btn.primary:disabled{opacity:.45;cursor:default}
+  .btn.danger{color:var(--red);border-color:#4a2c26}
+  .btn.small{min-height:38px;padding:6px 12px;font-size:14px;border-radius:9px}
+  .btn.block{width:100%}
+  .err{background:#3a1f1a;border:1px solid #6e352a;color:#f2b8ab;border-radius:10px;padding:10px 12px;font-size:14px;margin:10px 0;display:none}
+  .ok{background:#17301f;border:1px solid #2c5c3a;color:#a9e5bb;border-radius:10px;padding:10px 12px;font-size:14px;margin:10px 0;display:none}
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(13,17,23,.94);backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);padding:10px 14px}
+  .topbar .in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:8px}
+  .topbar .ttl{font-weight:700;color:var(--gold2);font-size:16.5px;margin-inline-end:auto}
+  .sec{border:1px solid var(--line);border-radius:var(--rad);margin:14px 0;background:var(--panel);overflow:hidden}
+  .sec>header{padding:13px 15px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+  .sec>header .cnt{color:var(--mut);font-size:13px}
+  .sec>header .chev{margin-inline-start:auto;color:var(--mut);transition:transform .2s}
+  .sec.open>header .chev{transform:rotate(180deg)}
+  .sec .body{display:none;padding:4px 13px 15px}
+  .sec.open .body{display:block}
+  .item{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:var(--panel2)}
+  .item .row1{display:flex;gap:11px;align-items:flex-start}
+  .thumb{width:74px;height:74px;flex:0 0 74px;border-radius:10px;object-fit:cover;background:#0a0e14;border:1px solid var(--line);cursor:pointer}
+  .thumb.empty{display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:11.5px;text-align:center;padding:4px}
+  .item .fields{flex:1;min-width:0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .itemtools{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center}
+  .itemtools .sp{flex:1}
+  .iconbtn{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--txt);font-size:16px;cursor:pointer}
+  .iconbtn.red{color:var(--red)}
+  .publishbar{position:fixed;bottom:0;right:0;left:0;z-index:30;background:rgba(13,17,23,.96);border-top:1px solid var(--line);
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
+  .publishbar .in{max-width:640px;margin:0 auto;display:flex;gap:9px;align-items:center}
+  .dirty-note{color:var(--gold2);font-size:13px}
+  .hidden{display:none!important}
+  .center{text-align:center}
+  .logo{font-size:30px;text-align:center;margin:26px 0 0}
+  a{color:var(--gold2)}
+  .spin{display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:-3px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- ======== Setup screen (first run on this phone) ======== -->
+<div class="wrap hidden" id="scr-setup">
+  <div class="logo">🌿</div>
+  <h1 class="center">لوحة إدارة المنيو</h1>
+  <p class="mut center">إعداد لأول مرة على هذا الموبايل — خطوتين بس، ومش هتتكرر.</p>
+  <div class="card">
+    <h2>١) اختر باسورد اللوحة</h2>
+    <p class="mut">ده اللي هيفتح لك شاشة الإدارة كل مرة. بيتحفظ على موبايلك بس.</p>
+    <label>الباسورد</label>
+    <input type="password" id="su-pass1" autocomplete="new-password">
+    <label>اكتبه تاني للتأكيد</label>
+    <input type="password" id="su-pass2" autocomplete="new-password">
+  </div>
+  <div class="card">
+    <h2>٢) مفتاح وصول GitHub</h2>
+    <p class="mut">المفتاح ده هو اللي بينشر تعديلاتك على الموقع فعليًا، وبيتحفظ على موبايلك بس ومش بيتبعت لأي حد. الصقه هنا:</p>
+    <label>المفتاح (يبدأ بـ github_pat_)</label>
+    <input type="text" id="su-token" dir="ltr" autocomplete="off" placeholder="github_pat_...">
+    <div class="err" id="su-err"></div>
+    <div style="height:12px"></div>
+    <button class="btn primary block" id="su-go">حفظ وابدأ</button>
+  </div>
+</div>
+
+<!-- ======== Lock screen ======== -->
+<div class="wrap hidden" id="scr-lock">
+  <div class="logo">🔒</div>
+  <h1 class="center">لوحة إدارة المنيو</h1>
+  <p class="mut center">اكتب باسورد اللوحة للدخول.</p>
+  <div class="card">
+    <label>الباسورد</label>
+    <input type="password" id="lk-pass" autocomplete="current-password">
+    <div class="err" id="lk-err"></div>
+    <div style="height:12px"></div>
+    <button class="btn primary block" id="lk-go">دخول</button>
+    <p class="mut center" style="margin-top:14px"><a href="#" id="lk-reset">نسيت الباسورد؟ إعادة ضبط اللوحة على هذا الموبايل</a></p>
+  </div>
+</div>
+
+<!-- ======== Editor screen ======== -->
+<div id="scr-edit" class="hidden">
+  <div class="topbar"><div class="in">
+    <span class="ttl">🌿 إدارة المنيو</span>
+    <a class="btn small" href="./" target="_blank" rel="noopener">فتح المنيو</a>
+    <button class="btn small" id="ed-settings">إعدادات</button>
+    <button class="btn small" id="ed-lock">قفل</button>
+  </div></div>
+  <div class="wrap">
+    <div class="err" id="ed-err"></div>
+    <div class="ok" id="ed-ok"></div>
+    <div id="ed-loading" class="card center"><span class="spin"></span> <span class="mut">بنحمّل بيانات المنيو الحالية…</span></div>
+    <div id="ed-sections"></div>
+    <div class="card hidden" id="ed-settings-card">
+      <h2>الإعدادات</h2>
+      <label>تغيير مفتاح وصول GitHub</label>
+      <input type="text" id="st-token" dir="ltr" autocomplete="off" placeholder="github_pat_...">
+      <div style="height:8px"></div>
+      <button class="btn block" id="st-save-token">حفظ المفتاح الجديد</button>
+      <label style="margin-top:18px">تغيير باسورد اللوحة (اكتب الجديد)</label>
+      <input type="password" id="st-pass" autocomplete="new-password">
+      <div style="height:8px"></div>
+      <button class="btn block" id="st-save-pass">حفظ الباسورد الجديد</button>
+      <div style="height:18px"></div>
+      <button class="btn danger block" id="st-wipe">مسح بيانات اللوحة من هذا الموبايل</button>
+      <p class="mut">المسح بيحذف الباسورد والمفتاح من الموبايل ده بس — المنيو نفسه مش بيتأثر.</p>
+    </div>
+  </div>
+  <div class="publishbar"><div class="in">
+    <span class="dirty-note" id="pb-note"></span>
+    <span style="flex:1"></span>
+    <button class="btn primary" id="pb-publish" disabled>نشر التعديلات</button>
+  </div></div>
+</div>
+
+<input type="file" id="img-picker" accept="image/*" class="hidden">
+
+<script>
+"use strict";
+/* ================= ChillOut menu admin =================
+   Repo: chilloutmassage/chilloutmassage.github.io — data file: menu-data.js
+   The GitHub token lives ONLY in this browser's localStorage. The panel
+   password is a light local gate (SHA-256 hash in localStorage); the token
+   is the real publishing key. */
+const OWNER = "chilloutmassage";
+const REPO = "chilloutmassage.github.io";
+const DATA_FILE = "menu-data.js";
+const LS_PWHASH = "co-admin-pwhash";
+const LS_TOKEN = "co-admin-token";
+const SS_OPEN = "co-admin-open";
+
+const $ = (id) => document.getElementById(id);
+const state = {
+  data: null, dirty: false,
+  branch: null, headSha: null, blobSha: null,
+  imgTarget: null, // {get,set} handler for the image being picked
+};
+
+/* ---------- small utils ---------- */
+function showErr(el, msg) { el.textContent = msg || ""; el.style.display = msg ? "block" : "none"; }
+function utf8ToBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  const CH = 0x8000;
+  for (let i = 0; i < bytes.length; i += CH) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+  return btoa(bin);
+}
+function base64ToUtf8(b64) {
+  const bin = atob(String(b64).replace(/\s/g, ""));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+async function sha256Hex(text) {
+  if (window.crypto && crypto.subtle) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  // fallback (light gate only): FNV-1a
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return "fnv" + h.toString(16);
+}
+function slugify(s) {
+  return String(s || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+function collectIds(data) {
+  const ids = new Set();
+  (function walk(o) {
+    if (!o || typeof o !== "object") return;
+    if (typeof o.id === "string") ids.add(o.id);
+    for (const k of Object.keys(o)) walk(o[k]);
+  })(data);
+  return ids;
+}
+function uniqueId(data, base) {
+  const ids = collectIds(data);
+  let id = base || "item";
+  if (!ids.has(id)) return id;
+  let n = 2;
+  while (ids.has(id + "-" + n)) n++;
+  return id + "-" + n;
+}
+function serializeData(data) {
+  return "/* ChillOut menu data — edited from the admin panel (admin.html). Do not edit by hand. */\n" +
+    "window.MENU_DATA = " + JSON.stringify(data, null, 1) + ";\n";
+}
+function parseDataFile(text) {
+  const a = text.indexOf("{");
+  const b = text.lastIndexOf("}");
+  if (a < 0 || b <= a) throw new Error("bad data file");
+  return JSON.parse(text.slice(a, b + 1));
+}
+function markDirty() {
+  state.dirty = true;
+  $("pb-publish").disabled = false;
+  $("pb-note").textContent = "عندك تعديلات لم تُنشر بعد";
+}
+function clearDirty() {
+  state.dirty = false;
+  $("pb-publish").disabled = true;
+  $("pb-note").textContent = "";
+}
+
+/* ---------- GitHub API ---------- */
+function token() { return localStorage.getItem(LS_TOKEN) || ""; }
+async function gh(path, opts) {
+  opts = opts || {};
+  const res = await fetch("https://api.github.com" + path, {
+    method: opts.method || "GET",
+    headers: {
+      "Authorization": "Bearer " + token(),
+      "Accept": "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      "Content-Type": "application/json",
+    },
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    let msg = "HTTP " + res.status;
+    try { const j = await res.json(); if (j && j.message) msg += ": " + j.message; } catch (e) {}
+    const err = new Error(msg);
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
+function ghErrorText(e) {
+  if (e && e.status === 401) return "المفتاح مرفوض من GitHub — تأكد إنك لاصقه صح أو اعمل مفتاح جديد.";
+  if (e && e.status === 403) return "GitHub رفض الطلب (403) — غالبًا المفتاح صلاحيته ناقصة أو منتهية.";
+  if (e && e.status === 404) return "مش لاقي المستودع أو الملف (404) — تأكد إن ملف menu-data.js مرفوع في المستودع.";
+  if (e && (e.message || "").indexOf("Failed to fetch") >= 0) return "مفيش اتصال بالإنترنت أو GitHub مش بيرد — جرب تاني.";
+  return "حصلت مشكلة: " + (e && e.message ? e.message : e);
+}
+async function loadFromGitHub() {
+  const repo = await gh("/repos/" + OWNER + "/" + REPO);
+  state.branch = repo.default_branch || "main";
+  const ref = await gh("/repos/" + OWNER + "/" + REPO + "/git/ref/heads/" + state.branch);
+  state.headSha = ref.object.sha;
+  const commit = await gh("/repos/" + OWNER + "/" + REPO + "/git/commits/" + state.headSha);
+  const tree = await gh("/repos/" + OWNER + "/" + REPO + "/git/trees/" + commit.tree.sha);
+  const entry = (tree.tree || []).find((t) => t.path === DATA_FILE);
+  if (!entry) { const e = new Error("data file missing"); e.status = 404; throw e; }
+  state.blobSha = entry.sha;
+  const blob = await gh("/repos/" + OWNER + "/" + REPO + "/git/blobs/" + entry.sha);
+  return parseDataFile(base64ToUtf8(blob.content));
+}
+async function publishToGitHub(data) {
+  // integrity: make sure nobody changed the file since we loaded it
+  const ref = await gh("/repos/" + OWNER + "/" + REPO + "/git/ref/heads/" + state.branch);
+  const headSha = ref.object.sha;
+  const commit = await gh("/repos/" + OWNER + "/" + REPO + "/git/commits/" + headSha);
+  const treeNow = await gh("/repos/" + OWNER + "/" + REPO + "/git/trees/" + commit.tree.sha);
+  const entryNow = (treeNow.tree || []).find((t) => t.path === DATA_FILE);
+  if (!entryNow || entryNow.sha !== state.blobSha) {
+    throw new Error("البيانات اتغيرت من مكان تاني بعد ما فتحت اللوحة — اقفل وافتح اللوحة من جديد قبل النشر.");
+  }
+  const text = serializeData(data);
+  const blob = await gh("/repos/" + OWNER + "/" + REPO + "/git/blobs", {
+    method: "POST", body: { content: utf8ToBase64(text), encoding: "base64" },
+  });
+  const newTree = await gh("/repos/" + OWNER + "/" + REPO + "/git/trees", {
+    method: "POST",
+    body: { base_tree: commit.tree.sha, tree: [{ path: DATA_FILE, mode: "100644", type: "blob", sha: blob.sha }] },
+  });
+  const newCommit = await gh("/repos/" + OWNER + "/" + REPO + "/git/commits", {
+    method: "POST",
+    body: { message: "تحديث المنيو من لوحة الإدارة", tree: newTree.sha, parents: [headSha] },
+  });
+  await gh("/repos/" + OWNER + "/" + REPO + "/git/refs/heads/" + state.branch, {
+    method: "PATCH", body: { sha: newCommit.sha },
+  });
+  state.headSha = newCommit.sha;
+  state.blobSha = blob.sha;
+  return newCommit.sha;
+}
+
+/* ---------- editor rendering ---------- */
+const escA = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let imgHandlers = {};
+const openSecs = new Set(["massage"]);
+function regImg(key, get, set) { imgHandlers[key] = { get, set }; return key; }
+function thumbHtml(src, key) {
+  return src
+    ? `<img class="thumb" data-imgkey="${key}" src="${escA(src)}" alt="">`
+    : `<div class="thumb empty" data-imgkey="${key}">من غير صورة<br>— اضغط للإضافة —</div>`;
+}
+function getPath(o, p) { return p.split(".").reduce((a, k) => (a == null ? a : a[k]), o); }
+function setPath(o, p, v) {
+  const ks = p.split(".");
+  let t = o;
+  for (let i = 0; i < ks.length - 1; i++) t = t[ks[i]];
+  t[ks[ks.length - 1]] = v;
+}
+function toolsHtml(sec, idx, count) {
+  return `<div class="itemtools">
+    <button class="iconbtn" data-act="up" data-sec="${sec}" data-idx="${idx}" ${idx === 0 ? "disabled" : ""} title="لفوق">↑</button>
+    <button class="iconbtn" data-act="down" data-sec="${sec}" data-idx="${idx}" ${idx === count - 1 ? "disabled" : ""} title="لتحت">↓</button>
+    <span class="sp"></span>
+    <button class="btn small danger" data-act="del" data-sec="${sec}" data-idx="${idx}">حذف</button>
+  </div>`;
+}
+function itemCard(sec, item, idx, count, opts) {
+  const base = sec + ".items." + idx;
+  const key = regImg(sec + "-" + idx, () => item.img, (v) => { item.img = v; });
+  let fields = `
+    <div class="grid2">
+      <div><label>الاسم بالعربي</label><input type="text" data-path="${base}.name.ar" value="${escA(item.name && item.name.ar)}"></div>
+      <div><label>الاسم بالإنجليزية</label><input type="text" dir="ltr" data-path="${base}.name.en" value="${escA(item.name && item.name.en)}"></div>`;
+  if (opts.price) fields += `<div><label>السعر (جنيه)</label><input type="number" inputmode="numeric" min="0" data-type="number" data-path="${base}.price" value="${item.price == null ? "" : item.price}"></div>`;
+  fields += `</div>`;
+  if (opts.desc) {
+    if (!item.desc) item.desc = { ar: "", en: "" };
+    fields += `
+    <div class="grid2">
+      <div><label>وصف / ملحوظة (عربي)</label><textarea data-path="${base}.desc.ar">${escA(item.desc.ar)}</textarea></div>
+      <div><label>وصف / ملحوظة (إنجليزية)</label><textarea dir="ltr" data-path="${base}.desc.en">${escA(item.desc.en)}</textarea></div>
+    </div>`;
+  }
+  if (opts.includes && item.includes) {
+    fields += `
+    <div class="grid2">
+      <div><label>يشمل (عربي — افصل بفاصلة)</label><textarea data-type="csv" data-path="${base}.includes.ar">${escA((item.includes.ar || []).join("، "))}</textarea></div>
+      <div><label>يشمل (إنجليزية — افصل بفاصلة)</label><textarea dir="ltr" data-type="csv" data-path="${base}.includes.en">${escA((item.includes.en || []).join(", "))}</textarea></div>
+    </div>`;
+  }
+  return `<div class="item">
+    <div class="row1">${thumbHtml(item.img, key)}<div class="fields">${fields}</div></div>
+    <div class="itemtools">
+      <button class="btn small" data-chimg="${key}">تغيير الصورة</button>
+      ${item.img ? `<button class="btn small danger" data-rmimg="${key}">حذف الصورة</button>` : ""}
+    </div>
+    ${toolsHtml(sec, idx, count)}
+  </div>`;
+}
+function sectionHtml(id, titleAr, count, body, extraHead) {
+  const open = openSecs.has(id) ? " open" : "";
+  return `<div class="sec${open}" data-secbox="${id}">
+    <header data-sectoggle="${id}"><h2>${escA(titleAr)}</h2><span class="cnt">${count}</span><span class="chev">▾</span></header>
+    <div class="body">${extraHead || ""}${body}</div>
+  </div>`;
+}
+function renderEditor() {
+  const d = state.data;
+  imgHandlers = {};
+  let h = "";
+
+  // main images
+  const heroKey = regImg("hero", () => d.hero, (v) => { d.hero = v; });
+  const mImgKey = regImg("massage-img", () => d.massage.img, (v) => { d.massage.img = v; });
+  h += sectionHtml("mainimgs", "الصور الرئيسية", "", `
+    <div class="item"><div class="row1">${thumbHtml(d.hero, heroKey)}<div class="fields">
+      <label>صورة الغلاف (أعلى المنيو)</label>
+      <div class="itemtools"><button class="btn small" data-chimg="${heroKey}">تغيير الصورة</button></div>
+    </div></div></div>
+    <div class="item"><div class="row1">${thumbHtml(d.massage.img, mImgKey)}<div class="fields">
+      <label>صورة قسم المساج</label>
+      <div class="itemtools"><button class="btn small" data-chimg="${mImgKey}">تغيير الصورة</button></div>
+    </div></div></div>`);
+
+  // massage: duration rows + foam
+  const m = d.massage;
+  let rows = m.rows.map((r, i) => `
+    <div class="item"><div class="grid2">
+      <div><label>المدة (دقيقة)</label><input type="number" inputmode="numeric" min="0" data-type="number" data-path="massage.rows.${i}.min" value="${r.min}"></div>
+      <div><label>السعر (جنيه)</label><input type="number" inputmode="numeric" min="0" data-type="number" data-path="massage.rows.${i}.price" value="${r.price}"></div>
+    </div>${toolsHtml("rows", i, m.rows.length)}</div>`).join("");
+  rows += `<button class="btn block" data-act="add-row">＋ إضافة مدة جديدة</button>`;
+  const foamKey = regImg("foam", () => m.foam.img, (v) => { m.foam.img = v; });
+  rows += `<div class="item" style="margin-top:16px"><div class="row1">${thumbHtml(m.foam.img, foamKey)}<div class="fields">
+    <div class="grid2">
+      <div><label>الاسم بالعربي</label><input type="text" data-path="massage.foam.name.ar" value="${escA(m.foam.name.ar)}"></div>
+      <div><label>الاسم بالإنجليزية</label><input type="text" dir="ltr" data-path="massage.foam.name.en" value="${escA(m.foam.name.en)}"></div>
+      <div><label>المدة (دقيقة)</label><input type="number" inputmode="numeric" min="0" data-type="number" data-path="massage.foam.min" value="${m.foam.min}"></div>
+      <div><label>السعر (جنيه)</label><input type="number" inputmode="numeric" min="0" data-type="number" data-path="massage.foam.price" value="${m.foam.price}"></div>
+    </div></div></div>
+    <div class="itemtools"><button class="btn small" data-chimg="${foamKey}">تغيير الصورة</button>
+    ${m.foam.img ? `<button class="btn small danger" data-rmimg="${foamKey}">حذف الصورة</button>` : ""}</div></div>`;
+  h += sectionHtml("massage", m.title.ar + " — المدد والأسعار", m.rows.length + " مدد", rows);
+
+  // baths & care
+  h += sectionHtml("baths", d.baths.title.ar, d.baths.items.length + " خدمات",
+    d.baths.items.map((it, i) => itemCard("baths", it, i, d.baths.items.length, { price: true, desc: true, includes: true })).join("") +
+    `<button class="btn block" data-act="add-item" data-sec="baths">＋ إضافة خدمة جديدة</button>`);
+  h += sectionHtml("care", d.care.title.ar, d.care.items.length + " خدمات",
+    d.care.items.map((it, i) => itemCard("care", it, i, d.care.items.length, { price: true })).join("") +
+    `<button class="btn block" data-act="add-item" data-sec="care">＋ إضافة خدمة جديدة</button>`);
+
+  // addons: one shared price
+  const ad = d.addons;
+  h += sectionHtml("addons", ad.title.ar, ad.items.length + " إضافات",
+    `<div class="item"><label>سعر كل إضافة (جنيه) — سعر موحّد لكل الإضافات</label>
+       <input type="number" inputmode="numeric" min="0" data-type="number" data-path="addons.price" value="${ad.price}"></div>` +
+    ad.items.map((it, i) => itemCard("addons", it, i, ad.items.length, { price: false })).join("") +
+    `<button class="btn block" data-act="add-item" data-sec="addons">＋ إضافة جديدة</button>`);
+
+  $("ed-sections").innerHTML = h;
+}
+function normalizeData(d) {
+  for (const sec of ["baths", "care"]) {
+    for (const it of d[sec].items) {
+      if (it.desc && !it.desc.ar && !it.desc.en) delete it.desc;
+      if (it.includes && !(it.includes.ar || []).length && !(it.includes.en || []).length) delete it.includes;
+    }
+  }
+}
+
+/* ---------- image picking ---------- */
+function processImageFile(file, cb) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const max = 1000;
+      let w = img.naturalWidth, hh = img.naturalHeight;
+      const scale = Math.min(1, max / Math.max(w, hh));
+      w = Math.max(1, Math.round(w * scale)); hh = Math.max(1, Math.round(hh * scale));
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = hh;
+      cv.getContext("2d").drawImage(img, 0, 0, w, hh);
+      URL.revokeObjectURL(url);
+      cb(cv.toDataURL("image/jpeg", 0.82));
+    } catch (e) {
+      URL.revokeObjectURL(url);
+      alert("حصلت مشكلة في معالجة الصورة — جرب صورة تانية.");
+    }
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); alert("الصورة دي مش بتتفتح — جرب صورة تانية."); };
+  img.src = url;
+}
+$("img-picker").addEventListener("change", (e) => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if (!f || !state.imgTarget) return;
+  const target = state.imgTarget;
+  state.imgTarget = null;
+  processImageFile(f, (dataUrl) => { target.set(dataUrl); markDirty(); renderEditor(); });
+});
+
+/* ---------- editor events (delegation) ---------- */
+$("ed-sections").addEventListener("input", (e) => {
+  const el = e.target.closest("[data-path]");
+  if (!el) return;
+  let v = el.value;
+  if (el.dataset.type === "number") v = el.value === "" ? 0 : Number(el.value);
+  if (el.dataset.type === "csv") v = el.value.split(/[,،]/).map((s) => s.trim()).filter(Boolean);
+  setPath(state.data, el.dataset.path, v);
+  markDirty();
+});
+$("ed-sections").addEventListener("click", (e) => {
+  const tog = e.target.closest("[data-sectoggle]");
+  if (tog && !e.target.closest("button,input,textarea,a")) {
+    const id = tog.dataset.sectoggle;
+    const box = tog.closest(".sec");
+    box.classList.toggle("open");
+    if (box.classList.contains("open")) openSecs.add(id); else openSecs.delete(id);
+    return;
+  }
+  const imgEl = e.target.closest("[data-imgkey]");
+  if (imgEl) { state.imgTarget = imgHandlers[imgEl.dataset.imgkey]; $("img-picker").click(); return; }
+  const ch = e.target.closest("[data-chimg]");
+  if (ch) { state.imgTarget = imgHandlers[ch.dataset.chimg]; $("img-picker").click(); return; }
+  const rm = e.target.closest("[data-rmimg]");
+  if (rm) {
+    if (!confirm("تحذف الصورة دي؟ الخدمة هتظهر من غير صورة لحد ما تضيف واحدة.")) return;
+    imgHandlers[rm.dataset.rmimg].set("");
+    markDirty(); renderEditor(); return;
+  }
+  const btn = e.target.closest("[data-act]");
+  if (!btn) return;
+  const act = btn.dataset.act, sec = btn.dataset.sec, idx = Number(btn.dataset.idx);
+  const d = state.data;
+  const arr = sec === "rows" ? d.massage.rows : d[sec].items;
+  if (act === "del") {
+    const nm = sec === "rows" ? "مدة " + arr[idx].min + " دقيقة" : ((arr[idx].name && arr[idx].name.ar) || "الخدمة");
+    if (!confirm("متأكد تحذف «" + nm + "»؟ الحذف بيتنشر على الموقع لما تدوس نشر.")) return;
+    arr.splice(idx, 1);
+  } else if (act === "up" && idx > 0) {
+    const t = arr[idx - 1]; arr[idx - 1] = arr[idx]; arr[idx] = t;
+  } else if (act === "down" && idx < arr.length - 1) {
+    const t = arr[idx + 1]; arr[idx + 1] = arr[idx]; arr[idx] = t;
+  } else if (act === "add-item") {
+    openSecs.add(sec);
+    if (sec === "baths") arr.push({ id: uniqueId(d, "bath-new"), img: "", price: 0, name: { ar: "", en: "" } });
+    else if (sec === "care") arr.push({ id: uniqueId(d, "care-new"), img: "", price: 0, name: { ar: "", en: "" } });
+    else arr.push({ id: uniqueId(d, "addon-new"), img: "", name: { ar: "", en: "" } });
+  } else if (act === "add-row") {
+    openSecs.add("massage");
+    arr.push({ id: uniqueId(d, "massage-new"), min: 60, price: 0 });
+  } else { return; }
+  markDirty(); renderEditor();
+});
+
+/* ---------- publish ---------- */
+$("pb-publish").addEventListener("click", async () => {
+  const btn = $("pb-publish");
+  btn.disabled = true;
+  btn.textContent = "بينشر…";
+  showErr($("ed-err"), ""); showErr($("ed-ok"), "");
+  try {
+    normalizeData(state.data);
+    await publishToGitHub(state.data);
+    clearDirty();
+    showErr($("ed-ok"), "اتنشرت التعديلات بنجاح ✓ المنيو على الموقع هيتحدث خلال دقيقة تقريبًا.");
+    $("ed-ok").scrollIntoView({ behavior: "smooth", block: "center" });
+  } catch (e) {
+    showErr($("ed-err"), e && e.status ? ghErrorText(e) : ("النشر ما كملش: " + (e && e.message ? e.message : e)));
+    btn.disabled = false;
+  }
+  btn.textContent = "نشر التعديلات";
+});
+window.addEventListener("beforeunload", (e) => { if (state.dirty) { e.preventDefault(); e.returnValue = ""; } });
+
+/* ---------- screens ---------- */
+function show(id) {
+  for (const s of ["scr-setup", "scr-lock", "scr-edit"]) $(s).classList.toggle("hidden", s !== id);
+}
+async function enterEditor() {
+  show("scr-edit");
+  if (state.data) { $("ed-loading").classList.add("hidden"); return; }
+  $("ed-loading").classList.remove("hidden");
+  $("ed-sections").innerHTML = "";
+  showErr($("ed-err"), "");
+  try {
+    state.data = await loadFromGitHub();
+    $("ed-loading").classList.add("hidden");
+    renderEditor();
+    clearDirty();
+  } catch (e) {
+    $("ed-loading").innerHTML = '<span class="mut">' + escA(ghErrorText(e)) + '</span><div style="height:10px"></div><button class="btn" onclick="location.reload()">حاول تاني</button>';
+  }
+}
+$("su-go").addEventListener("click", async () => {
+  const p1 = $("su-pass1").value, p2 = $("su-pass2").value, tk = $("su-token").value.trim();
+  showErr($("su-err"), "");
+  if (p1.length < 4) return showErr($("su-err"), "الباسورد قصير — خليه ٤ حروف أو أرقام على الأقل.");
+  if (p1 !== p2) return showErr($("su-err"), "الباسوردين مش زي بعض — اكتبهم تاني.");
+  if (!tk) return showErr($("su-err"), "الصق مفتاح وصول GitHub الأول.");
+  const btn = $("su-go");
+  btn.disabled = true; btn.textContent = "بنتأكد من المفتاح…";
+  localStorage.setItem(LS_TOKEN, tk);
+  try {
+    await gh("/repos/" + OWNER + "/" + REPO);
+  } catch (e) {
+    localStorage.removeItem(LS_TOKEN);
+    btn.disabled = false; btn.textContent = "حفظ وابدأ";
+    return showErr($("su-err"), ghErrorText(e));
+  }
+  localStorage.setItem(LS_PWHASH, await sha256Hex(p1));
+  sessionStorage.setItem(SS_OPEN, "1");
+  btn.disabled = false; btn.textContent = "حفظ وابدأ";
+  enterEditor();
+});
+$("lk-go").addEventListener("click", async () => {
+  const h = await sha256Hex($("lk-pass").value);
+  if (h === localStorage.getItem(LS_PWHASH)) {
+    sessionStorage.setItem(SS_OPEN, "1");
+    showErr($("lk-err"), "");
+    enterEditor();
+  } else {
+    showErr($("lk-err"), "الباسورد غلط — جرب تاني.");
+  }
+});
+$("lk-pass").addEventListener("keydown", (e) => { if (e.key === "Enter") $("lk-go").click(); });
+$("lk-reset").addEventListener("click", (e) => {
+  e.preventDefault();
+  if (!confirm("إعادة الضبط بتمسح الباسورد والمفتاح المحفوظين على الموبايل ده، وهتعمل الإعداد من جديد. متأكد؟")) return;
+  localStorage.removeItem(LS_PWHASH);
+  localStorage.removeItem(LS_TOKEN);
+  sessionStorage.removeItem(SS_OPEN);
+  location.reload();
+});
+$("ed-lock").addEventListener("click", () => {
+  if (state.dirty && !confirm("عندك تعديلات لم تُنشر — تقفل من غير نشر؟")) return;
+  sessionStorage.removeItem(SS_OPEN);
+  location.reload();
+});
+$("ed-settings").addEventListener("click", () => {
+  $("ed-settings-card").classList.toggle("hidden");
+  $("ed-settings-card").scrollIntoView({ behavior: "smooth", block: "center" });
+});
+$("st-save-token").addEventListener("click", async () => {
+  const tk = $("st-token").value.trim();
+  if (!tk) return;
+  const old = token();
+  localStorage.setItem(LS_TOKEN, tk);
+  try {
+    await gh("/repos/" + OWNER + "/" + REPO);
+    showErr($("ed-ok"), "المفتاح الجديد اتحفظ واشتغل ✓");
+    $("st-token").value = "";
+  } catch (e) {
+    localStorage.setItem(LS_TOKEN, old);
+    showErr($("ed-err"), ghErrorText(e));
+  }
+});
+$("st-save-pass").addEventListener("click", async () => {
+  const p = $("st-pass").value;
+  if (p.length < 4) return showErr($("ed-err"), "الباسورد قصير — ٤ على الأقل.");
+  localStorage.setItem(LS_PWHASH, await sha256Hex(p));
+  $("st-pass").value = "";
+  showErr($("ed-ok"), "الباسورد اتغير ✓");
+});
+$("st-wipe").addEventListener("click", () => {
+  if (!confirm("متأكد؟ الباسورد والمفتاح هيتمسحوا من الموبايل ده.")) return;
+  localStorage.removeItem(LS_PWHASH);
+  localStorage.removeItem(LS_TOKEN);
+  sessionStorage.removeItem(SS_OPEN);
+  location.reload();
+});
+
+/* ---------- init ---------- */
+(function init() {
+  const hasPw = !!localStorage.getItem(LS_PWHASH);
+  const hasTok = !!token();
+  if (!hasPw || !hasTok) { show("scr-setup"); return; }
+  if (sessionStorage.getItem(SS_OPEN) === "1") enterEditor();
+  else show("scr-lock");
+})();
+
+/* test hooks (harmless in production) */
+window.__admin = { serializeData, parseDataFile, slugify, uniqueId, utf8ToBase64, base64ToUtf8, publishToGitHub, loadFromGitHub, state };
+</script>
+</body>
+</html>
