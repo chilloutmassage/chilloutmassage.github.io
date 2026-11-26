@@ -412,5 +412,12 @@ window.MENU_DATA = {
     "show": "+20 109 260 0764"
    }
   ]
+ },
+ "offers": {
+  "title": {
+   "ar": "العروض",
+   "en": "Offers"
+  },
+  "items": []
  }
 };

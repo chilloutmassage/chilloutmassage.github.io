@@ -343,7 +343,8 @@ function itemCard(sec, item, idx, count, opts) {
     <div class="grid2">
       <div><label>الاسم بالعربي</label><input type="text" data-path="${base}.name.ar" value="${escA(item.name && item.name.ar)}"></div>
       <div><label>الاسم بالإنجليزية</label><input type="text" dir="ltr" data-path="${base}.name.en" value="${escA(item.name && item.name.en)}"></div>`;
-  if (opts.price) fields += `<div><label>السعر (جنيه)</label><input type="number" inputmode="numeric" min="0" data-type="number" data-path="${base}.price" value="${item.price == null ? "" : item.price}"></div>`;
+  if (opts.price) fields += `<div><label>السعر (جنيه)</label><input type="number" inputmode="numeric" min="0" data-type="${opts.priceNull ? "number-null" : "number"}" data-path="${base}.price" value="${item.price == null ? "" : item.price}"></div>`;
+  if (opts.oldPrice) fields += `<div><label>السعر قبل الخصم (اختياري)</label><input type="number" inputmode="numeric" min="0" data-type="number-null" data-path="${base}.oldPrice" value="${item.oldPrice == null ? "" : item.oldPrice}"></div>`;
   fields += `</div>`;
   if (opts.desc) {
     if (!item.desc) item.desc = { ar: "", en: "" };
@@ -430,6 +431,14 @@ function renderEditor() {
     ad.items.map((it, i) => itemCard("addons", it, i, ad.items.length, { price: false })).join("") +
     `<button class="btn block" data-act="add-item" data-sec="addons">＋ إضافة جديدة</button>`);
 
+  // offers (separate page, managed from here)
+  if (!d.offers) d.offers = { title: { ar: "العروض", en: "Offers" }, items: [] };
+  h += sectionHtml("offers", "العروض — صفحة منفصلة", d.offers.items.length + " عروض",
+    `<div class="item"><label>صفحة العروض لها رابط مستقل ومش مربوطة من المنيو</label>
+       <div class="itemtools"><a class="btn small" href="https://chilloutmassage.github.io/offers.html" target="_blank" rel="noopener">فتح صفحة العروض</a></div></div>` +
+    d.offers.items.map((it, i) => itemCard("offers", it, i, d.offers.items.length, { price: true, priceNull: true, oldPrice: true, desc: true })).join("") +
+    `<button class="btn block" data-act="add-item" data-sec="offers">＋ إضافة عرض جديد</button>`);
+
   $("ed-sections").innerHTML = h;
 }
 function normalizeData(d) {
@@ -438,6 +447,9 @@ function normalizeData(d) {
       if (it.desc && !it.desc.ar && !it.desc.en) delete it.desc;
       if (it.includes && !(it.includes.ar || []).length && !(it.includes.en || []).length) delete it.includes;
     }
+  }
+  if (d.offers) for (const it of d.offers.items) {
+    if (it.desc && !it.desc.ar && !it.desc.en) delete it.desc;
   }
 }
 
@@ -479,6 +491,7 @@ $("ed-sections").addEventListener("input", (e) => {
   if (!el) return;
   let v = el.value;
   if (el.dataset.type === "number") v = el.value === "" ? 0 : Number(el.value);
+  if (el.dataset.type === "number-null") v = el.value === "" ? null : Number(el.value);
   if (el.dataset.type === "csv") v = el.value.split(/[,،]/).map((s) => s.trim()).filter(Boolean);
   setPath(state.data, el.dataset.path, v);
   markDirty();
@@ -519,6 +532,7 @@ $("ed-sections").addEventListener("click", (e) => {
     openSecs.add(sec);
     if (sec === "baths") arr.push({ id: uniqueId(d, "bath-new"), img: "", price: 0, name: { ar: "", en: "" } });
     else if (sec === "care") arr.push({ id: uniqueId(d, "care-new"), img: "", price: 0, name: { ar: "", en: "" } });
+    else if (sec === "offers") arr.push({ id: uniqueId(d, "offer-new"), img: "", price: null, oldPrice: null, name: { ar: "", en: "" } });
     else arr.push({ id: uniqueId(d, "addon-new"), img: "", name: { ar: "", en: "" } });
   } else if (act === "add-row") {
     openSecs.add("massage");
