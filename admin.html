@@ -278,8 +278,11 @@ async function loadFromGitHub() {
   const entry = (tree.tree || []).find((t) => t.path === DATA_FILE);
   if (!entry) { const e = new Error("data file missing"); e.status = 404; throw e; }
   state.blobSha = entry.sha;
-  const blob = await gh("/repos/" + OWNER + "/" + REPO + "/git/blobs/" + entry.sha);
-  return parseDataFile(base64ToUtf8(blob.content));
+  // Load the content raw at the pinned commit: fast CDN delivery with no base64
+  // inflation (the blob API returns no content at all for files over 1 MB).
+  const res = await fetch("https://raw.githubusercontent.com/" + OWNER + "/" + REPO + "/" + state.headSha + "/" + DATA_FILE, { cache: "no-store" });
+  if (!res.ok) { const e = new Error("HTTP " + res.status); e.status = res.status; throw e; }
+  return parseDataFile(await res.text());
 }
 async function publishToGitHub(data) {
   // integrity: make sure nobody changed the file since we loaded it
