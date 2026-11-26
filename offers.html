@@ -43,11 +43,12 @@ h2{font-size:32px;line-height:1.2;flex:1;min-width:0}
 .ph::after{content:"";position:absolute;inset:6px;border:1px solid rgba(244,236,218,.45);pointer-events:none}
 .ph{aspect-ratio:2/3;margin:6px 0 16px;box-shadow:0 0 0 1px var(--cop)}
 .pr{white-space:nowrap}
-.pr b{font:700 28px/1 'Cormorant Garamond',serif;color:var(--cu);letter-spacing:.02em}
+.pr b{font:700 30px/1 'Cormorant Garamond',serif;color:var(--cu);letter-spacing:.02em}
 .pr small{font-size:12px;color:var(--mut);margin-inline-start:4px}
-.pr s.old{font:600 17px 'Cormorant Garamond',serif;color:var(--mut);margin-inline-end:7px}
+.pr s.old{font:700 21px 'Cormorant Garamond',serif;color:#cf3f38;margin-inline-end:8px;text-decoration-thickness:2px}
+.pr .off{display:inline-block;background:#cf3f38;color:#fff;font:700 13px 'Jost',sans-serif;padding:3px 10px;border-radius:999px;margin-inline-start:9px;vertical-align:middle}
 .item{padding:20px 0;border-bottom:1px solid var(--line)}
-.item .hd{display:flex;align-items:baseline;gap:12px}
+.item .hd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .item h3{flex:1;min-width:0;font-size:24px;line-height:1.3;overflow-wrap:anywhere}
 .inc{margin:6px 0 0;font-size:14px;color:var(--mut);white-space:pre-line}
 .note{margin:6px 0 4px;padding:12px 14px;background:var(--card);border:1px dashed var(--cu);font-size:14.5px}
@@ -102,7 +103,10 @@ const priceHtml = it => {
   const has = it.price != null && it.price !== "" && Number(it.price) > 0;
   const hasOld = it.oldPrice != null && it.oldPrice !== "" && Number(it.oldPrice) > 0;
   if (!has && !hasOld) return "";
-  return `<span class="pr">${hasOld ? `<s class="old">${it.oldPrice}</s>` : ""}${has ? `<b>${it.price}</b><small>${cur()}</small>` : ""}</span>`;
+  const pct = has && hasOld && Number(it.oldPrice) > Number(it.price)
+    ? Math.round((1 - Number(it.price) / Number(it.oldPrice)) * 100) : 0;
+  const badge = pct ? `<span class="off">${L === "ar" ? "خصم " + pct + "%" : pct + "% OFF"}</span>` : "";
+  return `<span class="pr">${hasOld ? `<s class="old">${it.oldPrice}</s>` : ""}${has ? `<b>${it.price}</b><small>${cur()}</small>` : ""}${badge}</span>`;
 };
 function render() {
   const D = DATA, u = D.ui;
