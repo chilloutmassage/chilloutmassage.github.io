@@ -78,8 +78,9 @@ footer .adr{font-size:15px;color:#d8d0bd}
 <main class="wrap" id="app"></main>
 <footer><div class="wrap" id="contact"></div><div style="text-align:center;padding:0 0 26px"><a href="admin.html" style="color:#5f7a6e;font-size:12px;text-decoration:none;letter-spacing:.02em">دخول الإدارة</a></div></footer>
 
-<script src="menu-data.js"></script>
 <script>
+/* The page boots after its data file loads — always fresh, never from the browser cache. */
+function boot() {
 const DATA = window.MENU_DATA;
 let L = "ar";
 try { L = localStorage.getItem("co-lang") === "en" ? "en" : "ar"; } catch (e) {}
@@ -130,6 +131,21 @@ document.getElementById("lang").addEventListener("click", () => {
   render();
 });
 render();
+}
+(function loadData() {
+  function fallback() {
+    var s = document.createElement("script");
+    s.src = "menu-data.js";
+    s.onload = function () { boot(); };
+    document.head.appendChild(s);
+  }
+  try {
+    fetch("menu-data.js", { cache: "no-store" })
+      .then(function (r) { return r.text(); })
+      .then(function (t) { new Function(t)(); boot(); })
+      .catch(fallback);
+  } catch (e) { fallback(); }
+})();
 </script>
 </body>
 </html>

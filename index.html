@@ -105,8 +105,9 @@ footer .adr{font-size:15px;color:#d8d0bd}
 <main class="wrap" id="app"></main>
 <footer><div class="wrap" id="contact"></div><div style="text-align:center;padding:0 0 26px"><a href="admin.html" style="color:#5b6577;font-size:12px;text-decoration:none;letter-spacing:.02em">دخول الإدارة</a></div></footer>
 
-<script src="menu-data.js"></script>
 <script>
+/* The menu boots after its data file loads — always fresh, never from the browser cache. */
+function boot() {
 /* ===== DATA: single source of truth. Edit names, prices, descriptions, translations and image paths here. =====
    img = data: URI (this single-file version) or a relative path such as images/<id>.jpg. Empty = placeholder.
    If an image is missing, it is silently removed and the elegant placeholder shows (no broken-image icon). */
@@ -163,6 +164,21 @@ document.getElementById("lang").addEventListener("click", () => {
   render();
 });
 render();
+}
+(function loadData() {
+  function fallback() {
+    var s = document.createElement("script");
+    s.src = "menu-data.js";
+    s.onload = function () { boot(); };
+    document.head.appendChild(s);
+  }
+  try {
+    fetch("menu-data.js", { cache: "no-store" })
+      .then(function (r) { return r.text(); })
+      .then(function (t) { new Function(t)(); boot(); })
+      .catch(fallback);
+  } catch (e) { fallback(); }
+})();
 </script>
 </body>
 </html>
