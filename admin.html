@@ -361,13 +361,21 @@ function itemCard(sec, item, idx, count, opts) {
       <div><label>يشمل (إنجليزية — افصل بفاصلة)</label><textarea dir="ltr" data-type="csv" data-path="${base}.includes.en">${escA((item.includes.en || []).join(", "))}</textarea></div>
     </div>`;
   }
+  let move = "";
+  if (opts.moveGroups && opts.moveGroups.length) {
+    move = `<div style="margin-top:8px"><label>نقل العرض لقائمة تانية</label>
+      <select data-move data-sec="${sec}" data-idx="${idx}">
+        <option value="">— اختر القائمة —</option>
+        ${opts.moveGroups.map((g) => `<option value="${g.sec}">${escA(g.label)}</option>`).join("")}
+      </select></div>`;
+  }
   return `<div class="item">
     <div class="row1">${thumbHtml(item.img, key)}<div class="fields">${fields}</div></div>
     <div class="itemtools">
       <button class="btn small" data-chimg="${key}">تغيير الصورة</button>
       ${item.img ? `<button class="btn small danger" data-rmimg="${key}">حذف الصورة</button>` : ""}
     </div>
-    ${toolsHtml(sec, idx, count)}
+    ${toolsHtml(sec, idx, count)}${move}
   </div>`;
 }
 function sectionHtml(id, titleAr, count, body, extraHead) {
@@ -431,13 +439,35 @@ function renderEditor() {
     ad.items.map((it, i) => itemCard("addons", it, i, ad.items.length, { price: false })).join("") +
     `<button class="btn block" data-act="add-item" data-sec="addons">＋ إضافة جديدة</button>`);
 
-  // offers (separate page, managed from here)
-  if (!d.offers) d.offers = { title: { ar: "العروض", en: "Offers" }, items: [] };
-  h += sectionHtml("offers", "العروض — صفحة منفصلة", d.offers.items.length + " عروض",
-    `<div class="item"><label>صفحة العروض لها رابط مستقل ومش مربوطة من المنيو</label>
-       <div class="itemtools"><a class="btn small" href="https://chilloutmassage.github.io/offers.html" target="_blank" rel="noopener">فتح صفحة العروض</a></div></div>` +
-    d.offers.items.map((it, i) => itemCard("offers", it, i, d.offers.items.length, { price: true, priceNull: true, oldPrice: true, desc: true })).join("") +
-    `<button class="btn block" data-act="add-item" data-sec="offers">＋ إضافة عرض جديد</button>`);
+  // offers (separate page with dropdown groups, managed from here)
+  if (!d.offers) d.offers = { title: { ar: "العروض", en: "Offers" }, groups: [] };
+  if (!d.offers.groups) {
+    d.offers.groups = [{ id: "group-main", name: { ar: "العروض", en: "Offers" }, items: d.offers.items || [] }];
+    delete d.offers.items;
+  }
+  const totalOffers = d.offers.groups.reduce((n, g) => n + g.items.length, 0);
+  let offersBody = `<div class="item"><label>صفحة العروض لها رابط مستقل ومش مربوطة من المنيو</label>
+       <div class="itemtools"><a class="btn small" href="https://chilloutmassage.github.io/offers.html" target="_blank" rel="noopener">فتح صفحة العروض</a></div></div>`;
+  d.offers.groups.forEach((g, gi) => {
+    const gsec = "offers.groups." + gi;
+    const others = d.offers.groups
+      .map((og, oi) => ({ sec: "offers.groups." + oi, label: (og.name && og.name.ar) || "قائمة بدون اسم" }))
+      .filter((_, oi) => oi !== gi);
+    offersBody += `<div class="item">
+      <div class="grid2">
+        <div><label>اسم القائمة (عربي)</label><input type="text" data-path="${gsec}.name.ar" value="${escA(g.name && g.name.ar)}"></div>
+        <div><label>اسم القائمة (English)</label><input type="text" dir="ltr" data-path="${gsec}.name.en" value="${escA(g.name && g.name.en)}"></div>
+      </div>
+      <div class="itemtools">
+        <button class="btn small danger" data-act="del-group" data-gi="${gi}">حذف القائمة</button>
+        <span class="mut">${g.items.length} عروض في القائمة</span>
+      </div>
+    </div>`;
+    offersBody += g.items.map((it, i) => itemCard(gsec, it, i, g.items.length, { price: true, priceNull: true, oldPrice: true, desc: true, moveGroups: others })).join("");
+    offersBody += `<button class="btn block" data-act="add-item" data-sec="${gsec}">＋ إضافة عرض داخل القائمة</button>`;
+  });
+  offersBody += `<button class="btn block" data-act="add-group">＋ إضافة قائمة جديدة</button>`;
+  h += sectionHtml("offers", "العروض — صفحة منفصلة", totalOffers + " عروض في " + d.offers.groups.length + " قوائم", offersBody);
 
   $("ed-sections").innerHTML = h;
 }
@@ -448,7 +478,7 @@ function normalizeData(d) {
       if (it.includes && !(it.includes.ar || []).length && !(it.includes.en || []).length) delete it.includes;
     }
   }
-  if (d.offers) for (const it of d.offers.items) {
+  if (d.offers && d.offers.groups) for (const g of d.offers.groups) for (const it of g.items) {
     if (it.desc && !it.desc.ar && !it.desc.en) delete it.desc;
   }
 }
@@ -519,7 +549,21 @@ $("ed-sections").addEventListener("click", (e) => {
   if (!btn) return;
   const act = btn.dataset.act, sec = btn.dataset.sec, idx = Number(btn.dataset.idx);
   const d = state.data;
-  const arr = sec === "rows" ? d.massage.rows : d[sec].items;
+  if (act === "add-group") {
+    if (!d.offers.groups) d.offers.groups = [];
+    d.offers.groups.push({ id: uniqueId(d, "group-new"), name: { ar: "", en: "" }, items: [] });
+    openSecs.add("offers");
+    markDirty(); renderEditor(); return;
+  }
+  if (act === "del-group") {
+    const gi = Number(btn.dataset.gi);
+    const g = d.offers.groups[gi];
+    if (!confirm("حذف قائمة «" + ((g.name && g.name.ar) || "") + "» وكل العروض اللي جواها (" + g.items.length + ")؟")) return;
+    d.offers.groups.splice(gi, 1);
+    openSecs.add("offers");
+    markDirty(); renderEditor(); return;
+  }
+  const arr = sec === "rows" ? d.massage.rows : getPath(d, sec + ".items");
   if (act === "del") {
     const nm = sec === "rows" ? "مدة " + arr[idx].min + " دقيقة" : ((arr[idx].name && arr[idx].name.ar) || "الخدمة");
     if (!confirm("متأكد تحذف «" + nm + "»؟ الحذف بيتنشر على الموقع لما تدوس نشر.")) return;
@@ -529,15 +573,25 @@ $("ed-sections").addEventListener("click", (e) => {
   } else if (act === "down" && idx < arr.length - 1) {
     const t = arr[idx + 1]; arr[idx + 1] = arr[idx]; arr[idx] = t;
   } else if (act === "add-item") {
-    openSecs.add(sec);
+    openSecs.add(sec.split(".")[0]);
     if (sec === "baths") arr.push({ id: uniqueId(d, "bath-new"), img: "", price: 0, name: { ar: "", en: "" } });
     else if (sec === "care") arr.push({ id: uniqueId(d, "care-new"), img: "", price: 0, name: { ar: "", en: "" } });
-    else if (sec === "offers") arr.push({ id: uniqueId(d, "offer-new"), img: "", price: null, oldPrice: null, name: { ar: "", en: "" } });
+    else if (sec === "offers" || sec.indexOf("offers.") === 0) arr.push({ id: uniqueId(d, "offer-new"), img: "", price: null, oldPrice: null, name: { ar: "", en: "" } });
     else arr.push({ id: uniqueId(d, "addon-new"), img: "", name: { ar: "", en: "" } });
   } else if (act === "add-row") {
     openSecs.add("massage");
     arr.push({ id: uniqueId(d, "massage-new"), min: 60, price: 0 });
   } else { return; }
+  markDirty(); renderEditor();
+});
+
+$("ed-sections").addEventListener("change", (e) => {
+  const mv = e.target.closest("select[data-move]");
+  if (!mv || !mv.value) return;
+  const from = getPath(state.data, mv.dataset.sec + ".items");
+  const item = from.splice(Number(mv.dataset.idx), 1)[0];
+  getPath(state.data, mv.value + ".items").push(item);
+  openSecs.add("offers");
   markDirty(); renderEditor();
 });
 
